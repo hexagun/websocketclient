@@ -8,3 +8,5 @@ github.com/hexagun/common v0.0.4 h1:Kbbw88oCAB1V1h5RD5DE8dhIYyHTX69NKl4Y16IDt8E=
 github.com/hexagun/common v0.0.4/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
 github.com/hexagun/common v0.0.5 h1:NKT1ouM4H6THXKBjCycI2WYuvsBSUStiTMGnKUwUBnc=
 github.com/hexagun/common v0.0.5/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
+github.com/hexagun/common v0.0.9 h1:0h87Lr/2kElTMzUaX5yiloj5DPC0KV/4Ljj6fCBnAws=
+github.com/hexagun/common v0.0.9/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
