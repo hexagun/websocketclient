@@ -1,12 +1,4 @@
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
 github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
-github.com/hexagun/common v0.0.0-20250305040939-f7dc4ff51d91 h1:FTg/6s976hboy1EwtOJDpuOqHzBQpUGpPj2ClWX133U=
-github.com/hexagun/common v0.0.0-20250305040939-f7dc4ff51d91/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
-github.com/hexagun/common v0.0.3 h1:FgoxYp60JMW22kDrmS2jdrzAFToOoBnjX10vU9i9Aco=
-github.com/hexagun/common v0.0.3/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
-github.com/hexagun/common v0.0.4 h1:Kbbw88oCAB1V1h5RD5DE8dhIYyHTX69NKl4Y16IDt8E=
-github.com/hexagun/common v0.0.4/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
-github.com/hexagun/common v0.0.5 h1:NKT1ouM4H6THXKBjCycI2WYuvsBSUStiTMGnKUwUBnc=
-github.com/hexagun/common v0.0.5/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
-github.com/hexagun/common v0.0.9 h1:0h87Lr/2kElTMzUaX5yiloj5DPC0KV/4Ljj6fCBnAws=
-github.com/hexagun/common v0.0.9/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=
+github.com/hexagun/common v0.0.11 h1:kjfpXdjSt5SNODnQmgC8NV+4d4KJf8l8ikcdQPBTyg8=
+github.com/hexagun/common v0.0.11/go.mod h1:F4cfNlG+KE3xYbJe7CR3dTif79p3zbkCJ3qdyAv9Oik=

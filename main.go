@@ -38,6 +38,15 @@ type Game struct {
 	//pool          *websocket.Pool // Seems wrong
 }
 
+func GenerateCustomID() int {
+	randomNumber, _ := rand.Int(rand.Reader, big.NewInt(1000000))
+	return int(randomNumber.Int64())
+}
+
+var addr = "localhost:8100"
+var gameId = 111
+var playerId = GenerateCustomID()
+
 func NewGame() *Game {
 	return &Game{
 		state: GameState{
@@ -56,8 +65,6 @@ func joinReducer(state *GameState, action common.Action) {
 
 	if state.players[0].name == "" {
 		state.players[0].name = fmt.Sprintf("%d", header.PlayerId)
-		// 	state.PlayerXReady = true
-		//state.players[0].token = "x"
 
 		// tr := rules[state.state][0] // Join
 		// state.state = tr.State
@@ -65,25 +72,53 @@ func joinReducer(state *GameState, action common.Action) {
 		fmt.Printf("Player 1 (%s) has connected.\n", state.players[0].name)
 	} else if state.players[1].name == "" {
 		state.players[1].name = fmt.Sprintf("%d", header.PlayerId)
-		//state.players[0].token = "o"
-		// 	state.PlayerO = player
-		// 	state.PlayerOReady = true
-		fmt.Printf("Player 2 (%s) has connected.\n", state.players[1].name)
+
 		// tr := rules[state.state][0] // Join
 		// state.state = tr.State
+
+		fmt.Printf("Player 2 (%s) has connected.\n", state.players[1].name)
+
 	} else {
 		fmt.Printf("Player %s cannot join, both slots are filled.\n", header.PlayerId)
 	}
 }
 
 func (g *Game) Draw() {
-	for _, p := range g.state.players {
-		fmt.Println("Player %s", p.name)
+	noToken := "-"
+	var token string
+
+	for i, p := range g.state.players {
+		if p.token == "" {
+			token = noToken
+		} else {
+			token = p.token
+		}
+
+		turnToken := ""
+		if g.state.activePlayerIndex == i {
+			turnToken = ">:"
+		}
+
+		playerStringStr := fmt.Sprintf("%s Player %s (%s)", turnToken, p.name, token)
+		fmt.Println(playerStringStr)
 	}
 	board := g.state.board
 	for _, i := range []int{0, 1, 2} {
-		fmt.Println("Board [%s,%s,%s]", board[i][0], board[i][1], board[i][2])
+		row := [3]string{"-", "-", "-"}
+		var tile string
+		for _, j := range []int{0, 1, 2} {
+			if board[i][j] == "" {
+				tile = noToken
+			} else {
+				tile = board[i][j]
+			}
+			row[j] = tile
+		}
+
+		boardLineStringStr := fmt.Sprintf("Board [%s,%s,%s]", row[0], row[1], row[2])
+		fmt.Println(boardLineStringStr)
 	}
+	fmt.Print(">: ")
 }
 
 func updateReducer(state *GameState, action common.Action) {
@@ -91,8 +126,49 @@ func updateReducer(state *GameState, action common.Action) {
 	//header := action.GetHeader()
 	payload := action.GetPayload().(common.GameStateUpdatePayload)
 	state.board = payload.Board
-	state.activePlayerIndex, _ = strconv.Atoi(payload.NextTurn)
+
+	if payload.NextTurn == state.players[0].name {
+		state.activePlayerIndex = 0
+	} else {
+		state.activePlayerIndex = 1
+	}
+
 	state.winner = payload.Winner
+}
+
+// func Reduce[T any, R any](input []T, init R, f func(R, T) R) R {
+// 	result := init
+// 	for _, v := range input {
+// 		result = f(result, v)
+// 	}
+// 	return result
+// }
+
+func startReducer(state *GameState, action common.Action) {
+
+	// YourToken  string //`json:"yourToken"`
+	// OpponentID string //`json:"opponentId"`
+	// FirstTurn  string //`json:"firstTurn"` // could also be a player ID
+
+	// header := action.GetHeader()
+	payload := action.GetPayload().(common.StartPayload)
+
+	state.players[0].token = payload.YourToken
+	state.players[0].name = strconv.Itoa(action.GetHeader().PlayerId)
+
+	if payload.YourToken == "x" {
+		state.players[1].token = "o"
+	} else {
+		state.players[1].token = "x"
+	}
+
+	state.players[1].name = payload.OpponentID
+
+	if payload.FirstTurn == state.players[0].name {
+		state.activePlayerIndex = 0
+	} else {
+		state.activePlayerIndex = 1
+	}
 }
 
 func (g *Game) GameLoop() {
@@ -109,7 +185,7 @@ func (g *Game) GameLoop() {
 			case common.Join:
 				joinReducer(&g.state, action)
 			case common.Start:
-				//startReducer(&g.state, action)
+				startReducer(&g.state, action)
 			default:
 			}
 
@@ -117,15 +193,6 @@ func (g *Game) GameLoop() {
 		}
 	}
 }
-
-func GenerateCustomID() int {
-	randomNumber, _ := rand.Int(rand.Reader, big.NewInt(1000000))
-	return int(randomNumber.Int64())
-}
-
-var addr = "localhost:8100"
-var gameId = 111
-var playerId = GenerateCustomID()
 
 type WebSocketClient struct {
 	conn *websocket.Conn
@@ -160,74 +227,6 @@ func (wsc *WebSocketClient) Close() {
 	} else {
 		panic("Already disconnected.")
 	}
-}
-
-type GameMessageDecoder struct {
-}
-
-func (g GameMessageDecoder) Decode(msg *common.IncomingMessage) common.Action {
-	var action common.Action
-
-	if msg.GameID != "" {
-		id, err := strconv.Atoi(msg.GameID)
-		if err != nil {
-			// ... handle error
-			panic(err)
-		}
-		gameId = id
-	}
-
-	if msg.PlayerID != "" {
-		id, err := strconv.Atoi(msg.PlayerID)
-		if err != nil {
-			// ... handle error
-			panic(err)
-		}
-		playerId = id
-	}
-
-	switch msg.Type {
-	case "gamestateupdate":
-		var updatePayload struct {
-			Board    [3][3]string `json:"board"`
-			NextTurn string       `json:"nextturn"`
-			Winner   string       `json:"winner"`
-		}
-		if err := json.Unmarshal(msg.Payload, &updatePayload); err == nil {
-			//fmt.Printf("Player made a move at row %d, col %d\n", movePayload.Row, movePayload.Col)
-			action = common.NewGameStateUpdateAction(gameId, playerId, common.GameStateUpdatePayload{
-				Board:    updatePayload.Board,
-				NextTurn: updatePayload.NextTurn,
-				Winner:   updatePayload.Winner,
-			})
-		}
-	//case "gameover":
-	//case "error":
-	case "start":
-		action = common.NewStartAction(gameId, playerId)
-	case "join":
-		action = common.NewJoinAction(gameId, playerId)
-	// case "leave":
-	// 	action = common.NewLeaveAction(gameId, playerId)
-	case "move":
-		var movePayload struct {
-			Row int `json:"row"`
-			Col int `json:"col"`
-		}
-		if err := json.Unmarshal(msg.Payload, &movePayload); err == nil {
-			fmt.Printf("Player made a move at row %d, col %d\n", movePayload.Row, movePayload.Col)
-			action = common.NewPlayerMoveAction(gameId, playerId, common.PlayerMovePayload{
-				Row: movePayload.Row,
-				Col: movePayload.Col,
-			})
-		}
-
-	default:
-		fmt.Println("Not Decoding stuff")
-	}
-
-	return action
-	//game.Dispatch(action)
 }
 
 func main() {
@@ -269,7 +268,7 @@ func main() {
 						}
 
 						fmt.Printf("Message Decoded: %+v\n", msg)
-						decoder := GameMessageDecoder{}
+						decoder := common.MessageDecoder{}
 						action := decoder.Decode(&msg)
 						game.Dispatch(action)
 						log.Printf("recv: %s", message)
